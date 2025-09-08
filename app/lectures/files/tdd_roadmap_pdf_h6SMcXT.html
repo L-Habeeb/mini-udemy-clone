@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailored TDD Roadmap</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        @page {
+            size: A4;
+            margin: 1in;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 300;
+        }
+        
+        .phase {
+            margin-bottom: 35px;
+            page-break-inside: avoid;
+        }
+        
+        .phase-title {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .section h3 {
+            color: #2c3e50;
+            font-size: 1.2em;
+            margin: 0 0 15px 0;
+            font-weight: 600;
+        }
+        
+        .section p {
+            margin: 10px 0;
+            color: #555;
+        }
+        
+        .test-list {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .test-list h4 {
+            color: #e74c3c;
+            font-size: 1em;
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+        
+        .test-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .test-list li {
+            margin: 5px 0;
+            color: #666;
+        }
+        
+        .workflow-test {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .workflow-test h4 {
+            color: #856404;
+            margin: 0 0 10px 0;
+        }
+        
+        .workflow-test p {
+            color: #856404;
+            margin: 0;
+            font-style: italic;
+        }
+        
+        .extra-features {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .extra-features h4 {
+            color: #0c5460;
+            margin: 0 0 10px 0;
+        }
+        
+        .extra-features ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #0c5460;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            
+            .phase {
+                page-break-inside: avoid;
+            }
+            
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+        
+        .download-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .download-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            min-width: 140px;
+            transition: background 0.3s;
+        }
+        
+        .download-btn:hover {
+            background: #2980b9;
+        }
+        
+        .download-btn.pdf-btn {
+            background: #e74c3c;
+        }
+        
+        .download-btn.pdf-btn:hover {
+            background: #c0392b;
+        }
+        
+        @media print {
+            .download-buttons {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="download-buttons">
+        <button class="download-btn pdf-btn" onclick="downloadPDF()">📄 Download PDF</button>
+        <button class="download-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+    
+    <div class="header">
+        <h1>Tailored TDD Roadmap</h1>
+    </div>
+
+    <div class="phase">
+        <div class="phase-title">Phase 1 – User Management (Core Foundation)</div>
+        
+        <div class="section">
+            <h3>1. User Model Setup</h3>
+            <p>Implement custom user model with roles (<code>is_student</code>, <code>is_instructor</code>, <code>is_admin</code>).</p>
+            
+            <div class="test-list">
+                <h4>Write model tests:</h4>
+                <ul>
+                    <li>User creation (normal & superuser)</li>
+                    <li>Role assignment</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>2. Admin Panel Integration</h3>
+            <p>Register User model in Django admin. Add custom list display, search, and filters for roles.</p>
+            
+            <div class="test-list">
+                <h4>Write admin tests:</h4>
+                <ul>
+                    <li>Confirm user appears in admin</li>
+                    <li>Role visibility</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="phase">
+        <div class="phase-title">Phase 2 – Authentication & Authorization</div>
+        
+        <div class="section">
+            <h3>1. Authentication Endpoints</h3>
+            <p>Implement token or session-based login and registration.</p>
+            
+            <div class="test-list">
+                <h4>TDD tests for:</h4>
+                <ul>
+                    <li>Successful registration</li>
+                    <li>Duplicate email errors</li>
+                    <li>Successful login & token generation</li>
+                    <li>Incorrect credentials handling</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>2. Role-Based Permissions</h3>
+            <p>Define custom permission classes in DRF:</p>
+            <ul style="margin: 10px 0; padding-left: 20px; color: #555;">
+                <li>Student-only views</li>
+                <li>Instructor-only views</li>
+                <li>Admin-only views</li>
+            </ul>
+            
+            <div class="test-list">
+                <h4>TDD tests for:</h4>
+                <ul>
+                    <li>Correct access for each role</li>
+                    <li>Denied access for incorrect roles</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="phase">
+        <div class="phase-title">Phase 3 – Core App Features</div>
+        <p style="color: #666; font-style: italic; margin-bottom: 20px; padding: 0 20px;">
+            <em>(Adjust based on your project type; below assumes a course/instructor platform)</em>
+        </p>
+        
+        <div class="section">
+            <h3>1. Course Model & CRUD</h3>
+            <p>Implement <code>Course</code> model (title, description, price, instructor, etc.).</p>
+            
+            <div class="test-list">
+                <h4>Write model tests for:</h4>
+                <ul>
+                    <li>Course creation</li>
+                    <li>Course assignment to instructors</li>
+                </ul>
+            </div>
+            
+            <div class="test-list">
+                <h4>Serializer & View tests for:</h4>
+                <ul>
+                    <li>Create, read, update, delete courses</li>
+                    <li>Students only allowed to view/enroll, not edit</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>2. Enrollment System</h3>
+            <p>Implement enrollment logic (Student ↔ Course relationship).</p>
+            
+            <div class="test-list">
+                <h4>Write tests for:</h4>
+                <ul>
+                    <li>Student enrolling in course</li>
+                    <li>Prevent duplicate enrollment</li>
+                    <li>Instructor/Admin views of enrolled students</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="phase">
+        <div class="phase-title">Phase 4 – Advanced Features</div>
+        
+        <div class="section">
+            <h3>1. Profile Management</h3>
+            <p>Endpoint for updating user profile info.</p>
+            
+            <div class="test-list">
+                <h4>TDD tests for:</h4>
+                <ul>
+                    <li>Only owner can update their profile</li>
+                    <li>Role-based restrictions</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>2. Content Management</h3>
+            <p>If courses have lessons, videos, quizzes, etc.</p>
+            
+            <div class="test-list">
+                <h4>TDD tests for:</h4>
+                <ul>
+                    <li>Instructor creating lessons</li>
+                    <li>Students viewing lessons</li>
+                    <li>Permissions for updates/deletes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="phase">
+        <div class="phase-title">Phase 5 – Finalization & Extras</div>
+        
+        <div class="section">
+            <h3>1. Integration Tests</h3>
+            
+            <div class="workflow-test">
+                <h4>Full workflow test:</h4>
+                <p>Register → Login → Enroll → Access course → Instructor updates content → Admin reviews</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>2. Extra Features</h3>
+            
+            <div class="extra-features">
+                <h4>Additional Features & Tests:</h4>
+                <ul>
+                    <li>Pagination, search, filtering for courses</li>
+                    <li>TDD tests for all additional features</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="phase">
+        <div class="phase-title">Phase 6 – Deployment & Documentation</div>
+        
+        <div class="section">
+            <h3>1. Testing for Production</h3>
+            <ul style="margin: 10px 0; padding-left: 20px; color: #555;">
+                <li>Coverage check (aim 80–90%+)</li>
+                <li>Integration with CI/CD if needed</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>2. Documentation</h3>
+            <ul style="margin: 10px 0; padding-left: 20px; color: #555;">
+                <li>API docs using DRF's <code>schema</code> or Swagger/OpenAPI</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Test-Driven Development Roadmap | Django REST Framework Project</p>
+    </div>
+
+    <script>
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            // Hide buttons during capture
+            const buttons = document.querySelector('.download-buttons');
+            buttons.style.display = 'none';
+            
+            try {
+                const element = document.body;
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 295; // A4 height in mm
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                // Add first page
+                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Add additional pages if needed
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                doc.save('TDD-Roadmap.pdf');
+            } catch (error) {
+                console.error('PDF generation failed:', error);
+                alert('PDF download failed. Please try the Print option instead.');
+            } finally {
+                // Show buttons again
+                buttons.style.display = 'flex';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 """
 Test for the Profile API
 """
-# users/tests/test_profile.py
+# users/test/test_profile.py
 from django.test import TestCase
 # from django.contrib.auth.models import User
 from django.urls import reverse

@@ -2,6 +2,8 @@
 API Models
 """
 from decimal import Decimal
+
+from django.core.exceptions import ValidationError
 from django.db.models import JSONField
 
 from django.core.validators import MinValueValidator
@@ -160,6 +162,151 @@ class Course(models.Model):
     def get_instructor_names(self):
         """Return comma-separated list of instructor names"""
         return ', '.join([instructor.name for instructor in self.instructor.all()])
+
+    def __str__(self):
+        return self.title
+
+
+class Section(models.Model):
+    """Section Model"""
+    title = models.CharField(max_length=255)
+    course = models.ForeignKey(
+        Course,
+        related_name='sections',
+        on_delete=models.CASCADE,
+    )
+    order = models.PositiveIntegerField()
+
+    @property
+    def lecture_count(self):
+        return self.lectures.count()
+
+    @property
+    def total_duration(self):
+        return self.lectures.aggregate(
+            total=models.Sum('duration')
+        )['total'] or 0
+
+    def get_duration_display(self):
+        """Format duration as '1h 37min' or '37min'"""
+        total_seconds = self.total_duration
+        if total_seconds == 0:
+            return '0min'
+
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+
+        if hours > 0:
+            return f'{hours}h {minutes}min'
+        return f'{minutes}min'
+
+    class Meta:
+        ordering = ['order']
+
+    def save(self, *args, **kwargs):
+        """Ensure validation runs on save"""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class Lecture(models.Model):
+    """Lecture Model"""
+
+    CONTENT_TYPE_CHOICES = [
+        ('video', 'Video'),
+        ('article', 'Article'),
+        ('file', 'File'),
+    ]
+
+    title = models.CharField(max_length=255)
+    section = models.ForeignKey(
+        Section,
+        related_name='lectures',
+        on_delete=models.CASCADE,
+    )
+    content_type = models.CharField(
+        max_length=20,
+        choices=CONTENT_TYPE_CHOICES
+    )
+    duration = models.PositiveIntegerField(help_text='Duration in seconds')
+    order = models.PositiveIntegerField()
+    is_preview = models.BooleanField(default=False)
+
+    video = models.FileField(upload_to='lectures/videos/', blank=True, null=True)
+    article = models.TextField(blank=True, null=True)
+    file = models.FileField(upload_to="lectures/files/", blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        """Custom validation for business rules"""
+        super().clean()
+
+        # Validation Rule 1: Videos must have duration > 0
+        if self.content_type == 'video' and self.duration <= 0:
+            raise ValidationError({
+                'duration': 'Video lectures must have a duration greater than 0 seconds.'
+            })
+
+        # Validation Rule 2: Only one content field should be provided
+        content_fields = [
+            (self.video, 'video'),
+            (self.article, 'article'),
+            (self.file, 'file')
+        ]
+
+        provided_fields = [name for field, name in content_fields if field]
+
+        if len(provided_fields) == 0:
+            raise ValidationError({
+                'content': 'You must provide either a video, article, or file for the lecture.'
+            })
+
+        if len(provided_fields) > 1:
+            raise ValidationError({
+                'content': f'You cannot provide multiple content types. Found: {", ".join(provided_fields)}'
+            })
+
+        # Validation Rule 3: Content must match content_type
+        if self.content_type == 'video' and not self.video:
+            raise ValidationError({
+                'video': 'Video content is required for video lectures.'
+            })
+
+        if self.content_type == 'article' and not self.article:
+            raise ValidationError({
+                'article': 'Article content is required for article lectures.'
+            })
+
+        if self.content_type == 'file' and not self.file:
+            raise ValidationError({
+                'file': 'File is required for file lectures.'
+            })
+
+    def get_duration_display(self):
+        """Format duration as '5:20' or '1:23:45'"""
+        if self.duration == 0:
+            return '0:00'
+
+        hours = self.duration // 3600
+        minutes = (self.duration % 3600) // 60
+        seconds = self.duration % 60
+
+        if hours > 0:
+            return f'{hours}:{minutes:02d}:{seconds:02d}'
+        return f'{minutes}:{seconds:02d}'
+
+    def save(self, *args, **kwargs):
+        """Ensure validation runs on save"""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
         return self.title

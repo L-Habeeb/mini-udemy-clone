@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'courses',
+    'curriculum',
     'drf_spectacular',
 ]
 

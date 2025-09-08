@@ -12,7 +12,7 @@ from core.models import Category
 
 class CategoryModelTests(TestCase):
     """
-    Test suite for Category model - Foundation tests for Categories & SubCategories system
+    Test suite for Category model - Foundation test for Categories & SubCategories system
     """
 
     def setUp(self):
