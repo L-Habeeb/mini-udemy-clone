@@ -163,6 +163,10 @@ class Course(models.Model):
         """Return comma-separated list of instructor names"""
         return ', '.join([instructor.name for instructor in self.instructor.all()])
 
+    @property
+    def total_enrollments(self):
+        return getattr(self, "enrollments").count()
+
     def __str__(self):
         return self.title
 
@@ -311,3 +315,26 @@ class Lecture(models.Model):
     def __str__(self):
         return self.title
 
+
+class Enrollment(models.Model):
+    """Enrollment Model"""
+    student = models.ForeignKey(User, related_name='enrollments', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name='enrollments', on_delete=models.CASCADE)
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = [['student', 'course']]
+        ordering = ['-enrolled_at']
+
+    def save(self, *args, **kwargs):
+        """Ensure validation runs on save"""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.student.email} enrolled in {self.course.title}"
+
+    @property
+    def total_enrollment(self):
+        return self.enrollments.count()

@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
-from core.models import Course, Category, SubCategory
+from core.models import Course, Category, SubCategory, Enrollment
 
 User = get_user_model()
 
@@ -57,7 +57,7 @@ class EnrollmentModelTests(TestCase):
             course=self.course
         )
 
-        expected_str = f"{self.student.username} enrolled in {self.course.title}"
+        expected_str = f"{self.student.email} enrolled in {self.course.title}"
         self.assertEqual(str(enrollment), expected_str)
 
     def test_unique_constraint_prevents_duplicate_enrollment(self):

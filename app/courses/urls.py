@@ -10,6 +10,7 @@ from rest_framework.routers import DefaultRouter
 
 from courses import views
 from curriculum import views as course_content_views
+from enrollment import views as enrollment_views
 
 
 router = DefaultRouter()
@@ -18,6 +19,7 @@ router.register('categories', views.CategoryViewSet)
 
 
 app_name = 'course'
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -41,5 +43,21 @@ urlpatterns = [
          course_content_views.LectureDetailView.as_view(),
          name='lecture-detail'
     ),
+
+    path('course/<int:course_id>/enroll',
+             enrollment_views.EnrollmentCreateView.as_view(),
+             name='enroll'
+    ),
+
+    path('my-enrollments',
+             enrollment_views.EnrollmentViews.as_view(),
+             name='my-enrollments'
+    ),
+
+    path('course/<int:course_id>/course-enrollment-stats',
+             enrollment_views.CourseEnrollmentViews.as_view(),
+             name='course-enrollment-stats'
+    ),
+
 
 ]
