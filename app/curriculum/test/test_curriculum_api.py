@@ -1,4 +1,3 @@
-# tests/test_curriculum_api.py
 """
 Tests for Curriculum API
 """
@@ -16,7 +15,6 @@ User = get_user_model()
 
 class CurriculumAPITestCase(APITestCase):
     def setUp(self):
-        # Users
         self.instructor = User.objects.create_user(
             email="instructor@example.com",
             password="pass123",
@@ -28,7 +26,6 @@ class CurriculumAPITestCase(APITestCase):
             role="student"
         )
 
-        # Category + SubCategory
         self.category = Category.objects.create(name="Development")
         self.subcategory = SubCategory.objects.create(
             category=self.category, name="Web Development"
@@ -44,7 +41,6 @@ class CurriculumAPITestCase(APITestCase):
         self.course.instructor.add(self.instructor)
         self.course.subcategory.add(self.subcategory)
 
-        # Section
         self.section = Section.objects.create(
             course=self.course, title="Introduction", order=1
         )
@@ -56,7 +52,6 @@ class CurriculumAPITestCase(APITestCase):
             content_type="video/mp4"
         )
 
-        # Lecture
         self.lecture = Lecture.objects.create(
             section=self.section,
             title="Welcome",
@@ -66,7 +61,6 @@ class CurriculumAPITestCase(APITestCase):
             video=video_file
         )
 
-        # URLs
         self.curriculum_url = reverse("course:curriculum-detail", args=[self.course.id])
         self.section_create_url = reverse(
             "course:section-create", args=[self.course.id]

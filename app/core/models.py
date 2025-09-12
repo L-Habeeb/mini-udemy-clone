@@ -3,15 +3,16 @@ API Models
 """
 from decimal import Decimal
 
+from django.utils.translation import gettext_lazy as _
+from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.db.models import JSONField
-
-from django.core.validators import MinValueValidator
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser,
                                         BaseUserManager,
-                                        PermissionsMixin)
-from django.utils.translation import gettext_lazy as _
+                                        PermissionsMixin
+                                        )
 
 
 class CustomUserManager(BaseUserManager):
@@ -338,3 +339,130 @@ class Enrollment(models.Model):
     @property
     def total_enrollment(self):
         return self.enrollments.count()
+
+
+class LectureProgress(models.Model):
+    """
+    Tracks individual lecture completion for each student.
+    One record per student per lecture.
+    """
+    student = models.ForeignKey(
+        User,
+        related_name='lecture_progress',
+        on_delete=models.CASCADE
+    )
+    lecture = models.ForeignKey(
+        Lecture,
+        related_name='progress_records',
+        on_delete=models.CASCADE
+    )
+    is_completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    watch_time = models.PositiveIntegerField(
+        default=0,
+        help_text='Seconds watched'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [['student', 'lecture']]
+        ordering = ['-updated_at']
+
+    def clean(self):
+        """
+        Model-level validation called by full_clean().
+        """
+        if not getattr(self, 'lecture', None) or not getattr(self, 'student', None):
+            return
+
+        course = self.lecture.section.course
+
+        if not course.enrollments.filter(student=self.student, is_active=True).exists():
+            raise ValidationError("Student must be enrolled in the course to track progress.")
+
+    def save(self, *args, **kwargs):
+        """
+        Custom save method to automatically set completion timestamps and watch time.
+        Called every time a LectureProgress object is saved to database.
+        """
+        self.full_clean()
+        if self.is_completed and not self.completed_at:
+            self.completed_at = timezone.now()
+            self.watch_time = self.lecture.duration
+        elif not self.is_completed:
+            self.completed_at = None
+            self.watch_time = 0
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        status = "✓" if self.is_completed else "○"
+        return f"{self.student.email} - {self.lecture.title} {status}"
+
+
+class CourseProgress(models.Model):
+    """
+    Stores computed progress data for each student per course.
+    This gets automatically updated when LectureProgress changes.
+    """
+    student = models.ForeignKey(
+        User,
+        related_name='course_progress',
+        on_delete=models.CASCADE
+    )
+    course = models.ForeignKey(
+        Course,
+        related_name='progress_records',
+        on_delete=models.CASCADE
+    )
+
+    # computed fields updated from updated_progress
+    completed_lectures = models.PositiveIntegerField(default=0)
+    total_lectures = models.PositiveIntegerField()
+    progress_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0
+    )
+
+    last_accessed = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [['student', 'course']]
+        ordering = ['-last_accessed']
+
+    def update_progress(self):
+        """
+        Recalculates progress based on current lecture completions.
+        This method is called automatically
+        """
+        course_lectures_completed_count = LectureProgress.objects.filter(
+            student=self.student,
+            lecture__section__course=self.course,
+            is_completed=True
+        ).count()
+        course_total_lectures = Lecture.objects.filter(
+            section__course=self.course
+        ).count()
+
+        self.total_lectures = course_total_lectures
+        self.completed_lectures = course_lectures_completed_count
+        if self.completed_lectures > 0:
+            self.progress_percentage = (course_lectures_completed_count / course_total_lectures) * 100
+        else:
+            self.progress_percentage = 0
+
+        self.save()
+
+    @property
+    def is_completed(self):
+        """
+        Property to check if course is 100% completed.
+        """
+        return self.progress_percentage == 100
+
+    def __str__(self):
+        return f"{self.student.email} - {self.course.title} ({self.progress_percentage}%)"
+

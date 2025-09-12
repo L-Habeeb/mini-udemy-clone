@@ -11,6 +11,7 @@ from rest_framework.routers import DefaultRouter
 from courses import views
 from curriculum import views as course_content_views
 from enrollment import views as enrollment_views
+from progresstracker import views as progresstracker_views
 
 
 router = DefaultRouter()
@@ -57,6 +58,24 @@ urlpatterns = [
     path('course/<int:course_id>/course-enrollment-stats',
              enrollment_views.CourseEnrollmentViews.as_view(),
              name='course-enrollment-stats'
+    ),
+
+    # progress_tracker URLS
+    path('lectures/<int:lecture_id>/mark-lecture-complete',
+             progresstracker_views.MarkLectureCompleteView.as_view(),
+             name='mark-lecture-complete'
+    ),
+    path('lectures/<int:lecture_id>/mark-lecture-incomplete',
+             progresstracker_views.MarkLectureIncompleteView.as_view(),
+             name='mark-lecture-incomplete'
+    ),
+    path('courses/<int:course_id>/course-progress',
+             progresstracker_views.CourseProgressView.as_view(),
+             name='course-progress'
+    ),
+    path('my-progress',
+             progresstracker_views.CourseProgressViewAll.as_view(),
+             name='my-progress'
     ),
 
 
