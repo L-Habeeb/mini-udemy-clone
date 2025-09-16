@@ -6,8 +6,8 @@ from django.shortcuts import get_object_or_404
 from enrollment import serializers
 from core.models import Lecture, Section, Course, Enrollment
 from rest_framework.authentication import TokenAuthentication
-from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
 
 from core.models import LectureProgress, CourseProgress
 from progresstracker.serializers import LectureProgressSerializer, CourseProgressSerializer

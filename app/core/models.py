@@ -1,8 +1,10 @@
 """
 API Models
 """
+from django.db.models import Avg, Count
 from decimal import Decimal
 
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
@@ -11,13 +13,12 @@ from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser,
                                         BaseUserManager,
-                                        PermissionsMixin
-                                        )
+                                        PermissionsMixin)
 
 
 class CustomUserManager(BaseUserManager):
     """Custom User Manager for User Model Create_user and superuser"""
-    
+
     def create_user(self, email, password=None, **extra_fields):
         """Create and return a user with an email and password"""
         if not email:
@@ -62,10 +63,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-    
+
     objects = CustomUserManager()
 
     class Meta:
@@ -167,6 +168,18 @@ class Course(models.Model):
     @property
     def total_enrollments(self):
         return getattr(self, "enrollments").count()
+
+    @property
+    def average_rating(self):
+        """Calculate average rating efficiently"""
+        result = self.reviews.aggregate(
+            avg_rating=Avg('rating'),
+            review_count=Count('rating')
+        )
+        return {
+            'average_rating': round(result['avg_rating'] or 0, 1),
+            'review_count': result['review_count']
+        }
 
     def __str__(self):
         return self.title
@@ -466,3 +479,60 @@ class CourseProgress(models.Model):
     def __str__(self):
         return f"{self.student.email} - {self.course.title} ({self.progress_percentage}%)"
 
+
+class CourseReview(models.Model):
+    """
+    Model for course reviews and ratings by students.
+    """
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='course_reviews'
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+    rating = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(1, message='Rating must be at least 1'),
+            MaxValueValidator(5, message='Rating must be at most 5')
+        ],
+        help_text='Rating from 1 to 5 stars'
+    )
+    review_text = models.TextField(
+        blank=True,
+        help_text='Optional review text'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['student', 'course']
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['course', '-created_at']),
+            models.Index(fields=['student', '-created_at']),
+            models.Index(fields=['rating']),
+        ]
+
+    def __str__(self):
+        return f"{self.student.email} - {self.course.title} ({self.rating}/5)"
+
+
+    def clean(self):
+        """Custom model validation"""
+        super().clean()
+
+        if not Enrollment.objects.filter(
+                student=self.student,
+                course=self.course
+        ).exists():
+            raise ValidationError({
+                'student': 'Student must be enrolled in the course to create a review.'
+            })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)

@@ -20,14 +20,16 @@ class CourseSerializer(serializers.ModelSerializer):
     instructor = slug_field_helper('email', get_user_model().objects.all(), many=True, required=True,)
     category = slug_field_helper('name', Category.objects.all())
     subcategory = slug_field_helper('name', SubCategory.objects.all(), many=True, required=True,)
+    average_rating = serializers.ReadOnlyField()
 
     class Meta:
         model = Course
         fields = [
             'id', 'category', 'subcategory', 'title',
             'description', 'objectives', 'instructor',
-            'language', 'level', 'price'
+            'language', 'level', 'price', 'average_rating'
         ]
+
 
     def validate_instructor(self, value):
         """Ensure all provided instructors have role='instructor'."""

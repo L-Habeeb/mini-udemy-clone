@@ -12,6 +12,7 @@ from courses import views
 from curriculum import views as course_content_views
 from enrollment import views as enrollment_views
 from progresstracker import views as progresstracker_views
+from coursereview import views as coursereview_views
 
 
 router = DefaultRouter()
@@ -78,5 +79,20 @@ urlpatterns = [
              name='my-progress'
     ),
 
+    # CourseReview URLS
+    path('<int:course_id>/reviews',
+             coursereview_views.CourseReviewView.as_view(),
+             name='course-review-create'
+    ),
+    path('<int:course_id>/reviews',
+             coursereview_views.CourseReviewView.as_view(),
+             name='course-review-list'
+    ),
+    path('<int:course_id>/reviews/<int:course_review_id>',
+             coursereview_views.CourseReviewUpdateView.as_view(),
+             name='course-review-update'
+    ),
 
+    # Searching
+    path('courses/search/', views.CourseSearchView.as_view(), name='course-search'),
 ]

@@ -25,3 +25,5 @@ class IsEnrolledInLectureCourse(BasePermission):
             student=request.user,
             course=lecture.section.course
         ).exists()
+
+
