@@ -2,7 +2,6 @@
 Views Handling the four URL
 mark-lecture-complete/incomplete and CourseProgress
 """
-from django.shortcuts import get_object_or_404
 from enrollment import serializers
 from core.models import Lecture, Section, Course, Enrollment
 from rest_framework.authentication import TokenAuthentication

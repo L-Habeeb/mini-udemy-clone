@@ -6,13 +6,11 @@ from django.shortcuts import get_object_or_404
 from curriculum import serializers
 from core.models import Lecture, Section, Course
 from rest_framework.authentication import TokenAuthentication
-from rest_framework import generics, mixins, viewsets
-# from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
 from curriculum.permissions import (IsLectureInstructor,
                          IsSectionLectureInstructor,
                          IsSectionInstructor,
-                         IsCourseInstructor
-                         )
+                         IsCourseInstructor)
 
 class LectureCreateView(generics.CreateAPIView):
     """
@@ -58,7 +56,6 @@ class SectionCreateView(generics.CreateAPIView):
     Create new section
     """
     authentication_classes = [TokenAuthentication]
-    # permission_classes = [IsCourseInstructor]
     serializer_class = serializers.SectionCreateSerializer
 
     def get_serializer_context(self):

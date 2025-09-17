@@ -4,7 +4,19 @@ Signal for post_save and post_delete Course Progress Tracking
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-from core.models import LectureProgress, CourseProgress, Lecture
+from core.models import LectureProgress, CourseProgress, Lecture, Enrollment, Cart
+
+
+@receiver(post_save, sender=Enrollment)
+def remove_cart_item_on_enrollment(sender, instance, created, **kwargs):
+    """
+    Remove course from student's cart when they enroll in it
+    """
+    if created and instance.is_active:
+        Cart.objects.filter(
+            student=instance.student,
+            course=instance.course
+        ).delete()
 
 
 @receiver(post_save, sender=LectureProgress)

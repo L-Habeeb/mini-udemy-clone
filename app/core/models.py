@@ -536,3 +536,42 @@ class CourseReview(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+class Cart(models.Model):
+    """
+    Cart Model to represent items in a student's shopping cart.
+    """
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='cart_items'
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='in_carts'
+    )
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['student', 'course']
+        ordering = ['-added_at']
+        verbose_name = 'Cart Item'
+        verbose_name_plural = 'Cart Items'
+
+    def __str__(self):
+        return f"{self.student.email} - {self.course.title}"
+
+    def clean(self):
+        """Custom validation"""
+        if Enrollment.objects.filter(
+                student=self.student,
+                course=self.course
+        ).exists():
+            raise ValidationError("Cannot add enrolled course to cart")
+
+    def save(self, *args, **kwargs):
+        """Custom save method to add validation"""
+        self.full_clean()
+        super().save(*args, **kwargs)

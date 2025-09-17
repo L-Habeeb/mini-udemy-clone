@@ -137,11 +137,6 @@ class SectionSerializer(serializers.ModelSerializer):
     Handles both read and write operations.
     """
     course_title = serializers.CharField(source='course.title', read_only=True)
-    # lectures = serializers.SlugRelatedField(
-    #     many=True,
-    #     read_only=True,
-    #     slug_field='title',
-    #  )
 
     class Meta:
         model = Section

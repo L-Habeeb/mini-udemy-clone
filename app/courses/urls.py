@@ -9,15 +9,17 @@ from django.urls import (
 from rest_framework.routers import DefaultRouter
 
 from courses import views
+from category import views as category_views
 from curriculum import views as course_content_views
 from enrollment import views as enrollment_views
 from progresstracker import views as progresstracker_views
 from coursereview import views as coursereview_views
+from cart import views as cart_views
 
 
 router = DefaultRouter()
 router.register('course', views.CourseViewSet)
-router.register('categories', views.CategoryViewSet)
+router.register('categories', category_views.CategoryViewSet)
 
 
 app_name = 'course'
@@ -95,4 +97,9 @@ urlpatterns = [
 
     # Searching
     path('courses/search/', views.CourseSearchView.as_view(), name='course-search'),
+    # Cart URLS
+    path('cart/<int:course_id>', cart_views.CartViews.as_view(), name='cart-add'),
+    path('cart-items', cart_views.MyCartViews.as_view(), name='my-cart'),
+    path('cart/<int:course_id>/', cart_views.CartRemoveView.as_view(), name='cart-remove'),
+
 ]

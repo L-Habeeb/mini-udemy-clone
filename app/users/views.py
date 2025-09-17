@@ -7,7 +7,6 @@ from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiTypes,
 )
-# from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -17,10 +16,6 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 
 from users import serializers
-
-# from core.models import Course
-# from app.core.models import Course
-# from app.courses.serializers import CourseSerializer
 
 user = get_user_model()
 

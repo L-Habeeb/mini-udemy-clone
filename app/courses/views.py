@@ -9,11 +9,9 @@ from courses import serializers, permission
 from core.models import Course, Category
 from category import serializers as category_serializer
 
-from django.db.models import Q, Avg, Count
+from django.db.models import Q, Avg
 from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework import status
-from django.db.models import Case, When, Value, FloatField
 
 
 class CourseViewSet(mixins.ListModelMixin,
@@ -28,14 +26,6 @@ class CourseViewSet(mixins.ListModelMixin,
 
     queryset = Course.objects.prefetch_related('instructor').order_by('-id')
     serializer_class = serializers.CourseSerializer
-
-
-class CategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """ViewSet for Category and its SubCategory Listing"""
-
-    queryset = Category.objects.prefetch_related('subcategory').all()
-    serializer_class = category_serializer.CategorySerializer
-
 
 @extend_schema(
     parameters=[
